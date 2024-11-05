@@ -1,4 +1,5 @@
 import SwiftUI
+private let detents: [PresentationDetent] = [.fraction(0.2), .medium, .large]
 
 struct TapasGrid: View {
   let tapas: [Tapa]
@@ -17,13 +18,14 @@ struct TapasGrid: View {
       ActualGrid(tapas).animation(.smooth, value: tapas)
     }
     .scrollContentBackground(.hidden)
-    .presentationDetents([.fraction(0.25), .medium, .large], selection: $presentation)
+    .presentationDetents(Set(detents), selection: $presentation)
     .presentationBackgroundInteraction(.enabled)
     .presentationBackground(.thinMaterial)
     .interactiveDismissDisabled()
-    .searchable(text: $searchText, isPresented: $isPresented, placement: .navigationBarDrawer(displayMode: .always), prompt: Text("Search Tapas"))
-    .searchPresentationToolbarBehavior(.avoidHidingContent)
-    .onChange(of: isPresented) { presentation = $1 ? .large : .fraction(0.25) }
+    .searchable(text: $searchText, isPresented: $isPresented, placement: .navigationBarDrawer(displayMode: .always))
+    .onChange(of: isPresented) { presentation = $1 ? detents.last! : detents.first! }
+    .toolbarTitleDisplayMode(.inlineLarge)
+    .navigationTitle("Tapas")
   }
 }
 
@@ -37,6 +39,6 @@ extension TapasGrid {
         }
       }
     }
-    .padding()
+    .padding(.horizontal)
   }
 }

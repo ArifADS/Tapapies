@@ -63,8 +63,8 @@ struct TapaView: View {
 
 struct TinyLabelStyle: LabelStyle {
   func makeBody(configuration: Configuration) -> some View {
-    HStack(alignment: .firstTextBaseline, spacing: 4) {
-      configuration.icon
+    HStack(alignment: .firstTextBaseline, spacing: 0) {
+      configuration.icon.frame(width: 16)
       configuration.title
     }
     .imageScale(.small)

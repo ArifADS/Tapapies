@@ -20,6 +20,10 @@ extension Restaurant {
     let url = picture.absoluteString.replacingOccurrences(of: "-1024x1024", with: "")
     let countries = country.split(separator: "/").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
     
+    let address = self.address
+//      .replacingOccurrences(of: "Embajadores 41 MSF", with: "M. San Fernando")
+//      .replacingOccurrences(of: "Santa Isabel 5 MAM", with: "M. Antón Martín")
+    
     return .init(
       id: String(id),
       name: tapaName,
