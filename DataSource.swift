@@ -1,22 +1,25 @@
 import Foundation
 import CoreLocation
-import CoreLocationUI
-import Contacts
-import SwiftUI
 
 @MainActor
-final class RestaurantDataSource {
-  init() {}
+final class DataSource {
   
-  func restaurants() async throws -> [Restaurant] {
+  var tapas: [Tapa] {
+    get async throws {
+      try await restaurants().map { $0.tapa() }
+    }
+  }
+  
+  private func restaurants() async throws -> [Restaurant] {
+//    let url = URL(string: "https://gist.githubusercontent.com/ArifADS/e27c94a1c7a98477f0f63fc90530d4bb/raw/restaurants.json")!
+    let url = Bundle.main.url(forResource: "restaurants", withExtension: "json")!
     let dec = JSONDecoder()
-    let url = URL(string: "https://gist.githubusercontent.com/ArifADS/e27c94a1c7a98477f0f63fc90530d4bb/raw/restaurants.json")!
     let (data, _) = try await URLSession.shared.data(from: url)
-    let locales = (try? dec.decode([Restaurant].self, from: data)) ?? []
+    let locales = try dec.decode([Restaurant].self, from: data)
     return locales
   }
   
-  func tapasData(_ tapas: [Restaurant]) -> String? {
+  func tapasData(_ tapas: [Tapa]) -> String? {
     let enc = JSONEncoder()
     enc.outputFormatting = [.prettyPrinted, .sortedKeys]
     let data = try? enc.encode(tapas)

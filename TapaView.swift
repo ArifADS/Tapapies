@@ -1,17 +1,16 @@
 import SwiftUI
-import CoreLocation
 
 struct TapaView: View {
-  let tapa: Restaurant
-  let location: CLLocation?
+  let tapa: Tapa
+  let location: Location?
   
   var body: some View {
     VStack(alignment: .leading, spacing: 8) {
-      Icon(tapa.picture)
+      Icon(tapa.picture.resized(to: .small))
       Info().padding([.horizontal, .bottom], 8)
     }
     .foregroundStyle(.foreground)
-    .frame(height: 240, alignment: .top)
+    .frame(height: 8*29, alignment: .top)
     .background(.regularMaterial)
     .clipShape(.rect(cornerRadius: 12))
     .labelStyle(TinyLabelStyle())
@@ -19,15 +18,11 @@ struct TapaView: View {
   }
   
   func Info() -> some View {
-    let distance = (location?.distance(from: tapa.location)).map {
-      Measurement(value: $0, unit: UnitLength.meters)
-    }
+    let distance = location?.measure(from: tapa.location)
     
-    var text = Text(tapa.name)
-    
-    if let distance {
-      text = text + Text(" • ") + Text(distance, format: .measurement(width: .abbreviated))
-    }
+    let countries = tapa.countries
+      .joined(separator: "•")
+//      .formatted(.list(type: .and))
     
     return VStack(alignment: .leading) {
       LabeledContent {
@@ -35,27 +30,25 @@ struct TapaView: View {
           Text($0, format: .measurement(width: .abbreviated))
         }
       } label: {
-        Text(tapa.name)
+        Text(tapa.maker)
       }
       .font(.caption)
       .foregroundStyle(.secondary)
       .textScale(.secondary)
       .lineLimit(1)
       
-      Text(tapa.tapaName)
+      Text(tapa.name)
         .font(.subheadline.weight(.medium))
       
       Spacer()
       
       Label(tapa.address, systemImage: "signpost.left")
-      Label(tapa.country, systemImage: "globe")
-        
+      Label(countries, systemImage: "globe")
     }
   }
   
   func Icon(_ url: URL) -> some View {
-    let newURL = URL(string: url.absoluteString.replacingOccurrences(of: "-1024x1024", with: "-300x300"))!
-    return AsyncImage(url: newURL) { image in
+    AsyncImage(url: url) { image in
       image
         .resizable()
         .scaledToFill()

@@ -34,13 +34,17 @@ let package = Package(
             ],
             capabilities: [
                 .locationWhenInUse(purposeString: "Please")
-            ]
+            ],
+            appCategory: "public.app-category.shopping"
         )
     ],
     targets: [
         .executableTarget(
             name: "AppModule",
-            path: "."
+            path: ".",
+            resources: [
+                .process("restaurants.json")
+            ]
         )
     ]
 )

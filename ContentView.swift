@@ -1,69 +1,43 @@
 import SwiftUI
-import CoreLocation
 
 struct ContentView: View {
-  let dataSource = RestaurantDataSource()
-  @State private var restaurants: [Restaurant] = []
-  @State private var location: CLLocation?
-  @State private var isPresented: Bool = true
-  @State private var selectedItem: Restaurant?
+  let dataSource = DataSource()
+  @State private var tapas: [Tapa] = []
+  @State private var location: Location?
+  @State private var selectedItem: Tapa?
   
   var body: some View {
-    RestaurantsMap(restaurants: restaurants, selectedItem: $selectedItem)
+    TapasMap(tapas: tapas, selectedItem: $selectedItem)
       .sheet(isPresented: .constant(true)) {
-        RestaurantsList(restaurants)
+        RestaurantsList(tapas)
       }
       .onLocationUpdate { location = $0 }
       .task { await searchRestaurants() }
   }
   
-  func RestaurantsList(_ restaurants: [Restaurant]) -> some View {
-    let tapas = self.location.map { l in restaurants.sorted {
-      $0.location.distance(from: l) < $1.location.distance(from: l)
-    } }
-    ?? restaurants
+  func RestaurantsList(_ tapas: [Tapa]) -> some View {
+    let tapas = location?.sorting(tapas) ?? tapas
     
     return NavigationStack {
       TapasGrid(tapas: tapas, location: location, selectedItem: $selectedItem.animation())
+//        .toolbar { Button("Copy") { pasteAction() } }
     }
   }
 }
 
 extension ContentView {
   func pasteAction() {
-    guard let str = dataSource.tapasData(restaurants) else { return }
+    guard let str = dataSource.tapasData(tapas) else { return }
     UIPasteboard.general.string = str
     print(str)
   }
   
   func searchRestaurants() async {
     do {
-      self.restaurants = try await dataSource.restaurants()
+      self.tapas = try await dataSource.tapas
     }
     catch {
       print(error)
-    }
-  }
-}
-
-extension View {
-  func onLocationUpdate(perform action: @escaping (CLLocation) -> Void) -> some View {
-    let updates = CLLocationUpdate.liveUpdates()
-    
-    return self.task {
-      do {
-        var lastLocation: CLLocation = .init()
-        for try await update in updates {
-          guard let loc = update.location else { continue }
-          guard loc.distance(from: lastLocation) > 10 else { continue }
-          lastLocation = loc
-          action(loc)
-          print(loc)
-        }
-      }
-      catch {
-        print("onLocationUpdate error:", error)
-      }
     }
   }
 }

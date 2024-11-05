@@ -14,4 +14,20 @@ struct Restaurant: Codable, Identifiable, Hashable {
 
 extension Restaurant {
   var title: String { "\(name)-\(tapaName)" }
+  
+  func tapa() -> Tapa {
+    let id = UUID().uuidString.split(separator: "-").first!
+    let url = picture.absoluteString.replacingOccurrences(of: "-1024x1024", with: "")
+    let countries = country.split(separator: "/").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+    
+    return .init(
+      id: String(id),
+      name: tapaName,
+      maker: name,
+      picture: URL(string: url)!,
+      location: .init(latitude: latitude, longitude: longitude),
+      address: address,
+      countries: countries
+    )
+  }
 }
