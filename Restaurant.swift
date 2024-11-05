@@ -1,5 +1,4 @@
 import Foundation
-import CoreLocation
 
 
 struct Restaurant: Codable, Identifiable, Hashable {
@@ -11,4 +10,8 @@ struct Restaurant: Codable, Identifiable, Hashable {
   var longitude: Double
   var address: String
   var country: String
+}
+
+extension Restaurant {
+  var title: String { "\(name)-\(tapaName)" }
 }

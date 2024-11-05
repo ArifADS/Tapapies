@@ -13,39 +13,32 @@ struct ContentView: View {
       .sheet(isPresented: .constant(true)) {
         RestaurantsList(restaurants)
       }
-      .task {
-        await searchRestaurants()
-      }
+      .onLocationUpdate { location = $0 }
+      .task { await searchRestaurants() }
   }
   
   func RestaurantsList(_ restaurants: [Restaurant]) -> some View {
-    NavigationStack {
-      List {
-        Section {
-          ForEach(restaurants) { restaurant in
-            Button(action: { selectedItem = restaurant }) {
-              TapaView(tapa: restaurant)
-            }
-          }
-        }
-      }
-      .navigationTitle("Restaurants")
+    let tapas = self.location.map { l in restaurants.sorted {
+      $0.location.distance(from: l) < $1.location.distance(from: l)
+    } }
+    ?? restaurants
+    
+    return NavigationStack {
+      TapasGrid(tapas: tapas, location: location, selectedItem: $selectedItem.animation())
     }
-    .presentationDetents([.fraction(0.25), .medium])
-    .presentationBackgroundInteraction(.enabled)
-    .interactiveDismissDisabled()
   }
 }
 
 extension ContentView {
+  func pasteAction() {
+    guard let str = dataSource.tapasData(restaurants) else { return }
+    UIPasteboard.general.string = str
+    print(str)
+  }
+  
   func searchRestaurants() async {
     do {
-      var rests = try await dataSource.restaurants()
-      self.restaurants = rests
-      
-      let manager = LocationManager()
-      let l = try await manager.currentLocation
-      self.location = l
+      self.restaurants = try await dataSource.restaurants()
     }
     catch {
       print(error)
@@ -53,4 +46,24 @@ extension ContentView {
   }
 }
 
-
+extension View {
+  func onLocationUpdate(perform action: @escaping (CLLocation) -> Void) -> some View {
+    let updates = CLLocationUpdate.liveUpdates()
+    
+    return self.task {
+      do {
+        var lastLocation: CLLocation = .init()
+        for try await update in updates {
+          guard let loc = update.location else { continue }
+          guard loc.distance(from: lastLocation) > 10 else { continue }
+          lastLocation = loc
+          action(loc)
+          print(loc)
+        }
+      }
+      catch {
+        print("onLocationUpdate error:", error)
+      }
+    }
+  }
+}

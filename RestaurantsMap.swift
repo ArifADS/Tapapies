@@ -24,6 +24,11 @@ struct RestaurantsMap: View {
       MapUserLocationButton()
       MapScaleView()
     }
+    .onChange(of: selectedItem) {
+      guard let item = $1 else { return }
+      let cam = MapCamera(centerCoordinate: item.coordinate, distance: 7500)
+      withAnimation { position = .camera(cam) }
+    }
   }
 }
 
