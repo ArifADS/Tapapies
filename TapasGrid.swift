@@ -1,5 +1,5 @@
 import SwiftUI
-private let detents: [PresentationDetent] = [.fraction(0.2), .medium, .large]
+private let detents: [PresentationDetent] = [.height(320), .large]
 
 struct TapasGrid: View {
   let tapas: [Tapa]
@@ -7,12 +7,13 @@ struct TapasGrid: View {
   @Binding var selectedItem: Tapa?
   @State private var searchText: String = ""
   @State private var isPresented: Bool = false
-  @State private var presentation: PresentationDetent = .fraction(0.25)
+  @State private var presentation: PresentationDetent = detents.first!
   
   
   var body: some View {
     let isSearching = isPresented && !searchText.isEmpty
     let tapas = isSearching ? tapas.filter { $0.title.localizedStandardContains(searchText) } : tapas
+    let showEmpty = tapas.isEmpty && isSearching
     
     return ScrollView {
       ActualGrid(tapas).animation(.smooth, value: tapas)
@@ -26,6 +27,7 @@ struct TapasGrid: View {
     .onChange(of: isPresented) { presentation = $1 ? detents.last! : detents.first! }
     .toolbarTitleDisplayMode(.inlineLarge)
     .navigationTitle("Tapas")
+    .overlay { EmptyTapas(show: showEmpty) }
   }
 }
 
@@ -40,5 +42,12 @@ extension TapasGrid {
       }
     }
     .padding(.horizontal)
+  }
+  
+  @ViewBuilder
+  func EmptyTapas(show: Bool) -> some View {
+    if show {
+      ContentUnavailableView.search(text: searchText)
+    }
   }
 }

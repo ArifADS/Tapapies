@@ -10,7 +10,7 @@ struct TapasMap: View {
   var body: some View {
     return Map(position: $position, selection: $selectedItem) {
       ForEach(tapas) { r in
-        Marker(r.name, coordinate: r.coordinate)
+        Marker(r.maker, coordinate: r.coordinate)
           .tag(r)
       }
       
@@ -23,9 +23,10 @@ struct TapasMap: View {
     }
     .onChange(of: selectedItem) {
       guard let item = $1?.coordinate else { return }
-      let cam = MapCamera(centerCoordinate: item, distance: 7500)
+      let cam = MapCamera(centerCoordinate: item, distance: 5000)
       withAnimation { position = .camera(cam) }
     }
+    .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 310) }
   }
 }
 
